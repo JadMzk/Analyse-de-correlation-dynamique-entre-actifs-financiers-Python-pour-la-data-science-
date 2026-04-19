@@ -59,9 +59,9 @@ def max_sharpe_weights(
     risk_free_rate: float,
     bounds: tuple[float, float] = (0.0, 1.0),
 ) -> np.ndarray:
-    """Calcule les poids long-only de Sharpe maximal avec somme(w)=1.
+    """Calcule les poids long-only (par défaut) de Sharpe maximal avec somme(w)=1.
 
-    L'optimiseur minimise l'oppose du ratio de Sharpe.
+    L'optimiseur minimise l'oppose du ratio de Sharpe; pour rendre le pb convexe.
     """
     n_assets = covariance.shape[0]
     cov_reg = covariance + 1e-8 * np.eye(n_assets)

@@ -17,7 +17,7 @@ Ce projet a deux objectifs principaux :
 
 ## 📁 Structure du projet
 
-Le projet contient principalement deux notebooks :
+Le projet contient principalement deux notebooks et un dossier src :
 
 ### 📓 1. `Modele.ipynb`
 Notebook principal dédié à la construction de portefeuilles.
@@ -46,6 +46,15 @@ Ce notebook propose une **analyse descriptive et économétrique** des données 
 - exploration des corrélations
 - premières analyses de type économétrique
 
+### 3. Dossier src
+
+Ce dossier contient toutes les fonctions utiles à la construction des portefeuilles. Ces fonctions sont réparties dans les fichiers suivants :
+
+- `data_utils.py` qui contient toutes les fonctions utilitaires pour le téléchargement et prétraitement des données
+- `features.py` qui contient les fonctions de feature engineering pour la prevision de rendements.
+- `metrics.py` Metriques de performance et fonctions de visualisation pour le backtest.
+- `ml_utils.py` Fonctions utilitaires pour l'apprentissage supervise avec XGBoost.
+- `portfolio_optim.py` Les fonctions d'optimisation de portefeuille (modele de risque + allocations).
 ---
 
 ## ⚙️ Installation
