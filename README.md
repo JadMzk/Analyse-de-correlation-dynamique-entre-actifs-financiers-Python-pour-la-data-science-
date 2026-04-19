@@ -37,13 +37,12 @@ Deux stratégies sont implémentées :
 
 ---
 
-### 📓 2. Notebook d’analyse économétrique (Analyses.ipynb)
+### 📓 2. Notebook d’analyse économétrique (Analyse.ipynb)
 
 Ce notebook propose une **analyse descriptive et économétrique** des données financières :
 
 - statistiques descriptives
 - analyse des rendements
-- étude de la volatilité
 - exploration des corrélations
 - premières analyses de type économétrique
 
