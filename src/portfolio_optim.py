@@ -24,6 +24,7 @@ def min_variance_weights(
     """Calcule les poids long-only de variance minimale avec somme(w)=1."""
     n_assets = covariance.shape[0]
     cov_reg = covariance + 1e-8 * np.eye(n_assets)
+    # Si matrice mal conditionnée on ajoute un petit terme
 
     def objective(weights: np.ndarray) -> float:
         return float(weights @ cov_reg @ weights)
@@ -36,7 +37,7 @@ def min_variance_weights(
         result = minimize(
             objective,
             x0=w0,
-            method="SLSQP",
+            method="SLSQP",  # SLSQP = Sequential Least Squares Programming
             constraints=constraints,
             bounds=box,
         )
@@ -59,19 +60,21 @@ def max_sharpe_weights(
 ) -> np.ndarray:
     """Calcule les poids long-only (par défaut) de Sharpe maximal avec somme(w)=1.
 
-    L'optimiseur minimise l'oppose du ratio de Sharpe; pour rendre le pb convexe.
+    L'optimiseur minimise l'oppose du ratio de Sharpe pour utiliser scipy.optimize.minimize
     """
     n_assets = covariance.shape[0]
     cov_reg = covariance + 1e-8 * np.eye(n_assets)
 
     def objective(weights: np.ndarray) -> float:
-        port_ret = float(weights @ mu)
+        port_ret = float(weights @ mu)  # w*mu (multiplication matricielle)
         port_vol = float(np.sqrt(np.clip(weights @ cov_reg @ weights, 1e-12, None)))
-        return -((port_ret - risk_free_rate) / port_vol)
+        # Borne min pour éviter pb
+        return -((port_ret - risk_free_rate) / port_vol)  # Ratio de sharpe
 
     constraints = ({"type": "eq", "fun": lambda w: np.sum(w) - 1.0},)
+    # Somme des poids - 1 fait 0 (hypothèse de Markowitz)
     box = tuple(bounds for _ in range(n_assets))
-    w0 = np.full(n_assets, 1.0 / n_assets)
+    w0 = np.full(n_assets, 1.0 / n_assets)  # Point de départ (portefeuille équipondéré)
 
     try:
         result = minimize(
@@ -110,7 +113,7 @@ def backtest_min_variance(
     next_assets = asset_returns.shift(-1)
     next_bench = benchmark_returns.shift(-1)
 
-    port_ret: list[float] = []
+    port_ret: list[float] = []  # Init des résultats du backtest
     bench_ret: list[float] = []
     dates: list[pd.Timestamp] = []
     weights_hist: list[np.ndarray] = []
@@ -120,10 +123,10 @@ def backtest_min_variance(
             continue
 
         window = asset_returns.loc[:current_date, assets].tail(rolling_window)
-        if len(window) < rolling_window:
+        if len(window) < rolling_window:  # Sécurité
             continue
 
-        sigma_t = ledoit_wolf_covariance(window.values)
+        sigma_t = ledoit_wolf_covariance(window.values)  # Rolling window (60j) sans look-ahead bias
         w_t = min_variance_weights(sigma_t, bounds=bounds)
 
         r_next = next_assets.loc[current_date, assets]
@@ -154,7 +157,7 @@ def backtest_max_sharpe(
     """Execute un backtest OOS d'un portefeuille dynamique Max Sharpe.
 
     A chaque date t, on utilise:
-    - mu predit par ML,
+    - mu predit par xgboost,
     - covariance Ledoit-Wolf sur la fenetre passee,
     puis on applique les poids au rendement realise en t+1.
     """
@@ -166,6 +169,8 @@ def backtest_max_sharpe(
     dates: list[pd.Timestamp] = []
     weights_hist: list[np.ndarray] = []
 
+    # Implémentation moins défensive que pour min_variance
+    # car mu_predictions est censée être bien indexée
     for current_date in mu_predictions.index:
         window = asset_returns.loc[:current_date, assets].tail(rolling_window)
         if len(window) < rolling_window:
