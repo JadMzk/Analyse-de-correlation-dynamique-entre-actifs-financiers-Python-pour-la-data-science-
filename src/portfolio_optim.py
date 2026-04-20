@@ -1,7 +1,5 @@
 """Fonctions d'optimisation de portefeuille (modele de risque + allocations)."""
 
-from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
