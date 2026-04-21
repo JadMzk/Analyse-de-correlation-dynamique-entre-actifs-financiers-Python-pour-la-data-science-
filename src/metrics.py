@@ -1,10 +1,9 @@
 """Metriques de performance et fonctions de visualisation pour le backtest."""
 
-from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import grangercausalitytests
 
 
 def wealth_from_log_returns(log_returns: pd.Series, base: float = 100.0) -> pd.Series:
@@ -108,3 +107,13 @@ def plot_cumulative_wealth(
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+
+def test_granger(df, target, predictor, max_lag=5):
+    print(f"\n--- Test de Granger : {predictor} cause-t-il {target} ? ---")
+    # Le test prend une matrice [cible, predicteur]
+    test_result = grangercausalitytests(df[[target, predictor]], maxlag=max_lag, verbose=False)
+
+    for lag in range(1, max_lag + 1):
+        p_val = test_result[lag][0]["ssr_ftest"][1]
+        print(f"Lag {lag}: p-value = {p_val:.4f}")
